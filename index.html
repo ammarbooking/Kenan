@@ -519,7 +519,8 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
 })();
 
 
-/* ===== SUPABASE DATABASE CONNECTION - V8 ===== */
+
+/* ===== SUPABASE DATABASE CONNECTION - V10 FORCE DATABASE SAVE ===== */
 (function(){
   const CONFIG_KEY='training_supabase_config_v1';
   const STATE_KEY='training_next_week_schedule_v1';
@@ -528,20 +529,24 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
   const FIXED_SUPABASE_KEY='sb_publishable_xxZgIGb2cmsNCaUxHrxx9g_A-tmN74a';
   let sb=null;
   let syncing=false;
+  let lastTimer=null;
+
   function safeJsonParse(v,fb){try{return JSON.parse(v||'')}catch(e){return fb}}
   function getConfig(){
     const saved=safeJsonParse(localStorage.getItem(CONFIG_KEY),{})||{};
     return {url:FIXED_SUPABASE_URL,anonKey:FIXED_SUPABASE_KEY,autoSync:saved.autoSync!==false};
   }
   function setConfig(c){localStorage.setItem(CONFIG_KEY,JSON.stringify(c||{}));}
+  function getDb(){return (typeof db!=='undefined' && db) ? db : (window.trainingDb||{employees:[],courseNames:[],logs:[]});}
+  function getSchedule(){return safeJsonParse(localStorage.getItem(STATE_KEY),'[]')||[];}
   function notify(msg,type){ if(typeof toast==='function') toast(msg); else console.log(msg); updateCloudStatus(type,msg); }
   function initClient(){
     const c=getConfig();
     if(c.url && c.anonKey && window.supabase){ sb=window.supabase.createClient(c.url,c.anonKey); updateCloudStatus('on','متصل بقاعدة البيانات'); return true; }
-    sb=null; updateCloudStatus('off','غير متصل - أضف بيانات Supabase'); return false;
+    sb=null; updateCloudStatus('off','غير متصل - مكتبة Supabase لم تحمل'); return false;
   }
   function collectState(){
-    return {version:'V9_CONNECTED_SUPABASE',savedAt:new Date().toISOString(),db:window.trainingDb||db,schedule:safeJsonParse(localStorage.getItem(STATE_KEY),'[]')||[],theme:localStorage.getItem('training_theme_v2')||'dark'};
+    return {version:'V10_FORCE_DATABASE_SAVE',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
   }
   function applyState(state){
     if(!state) return;
@@ -552,55 +557,160 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     if(typeof refreshAll==='function') refreshAll();
     if(typeof renderSchedule==='function') renderSchedule();
   }
+  function empPayload(e,i){
+    return {
+      employee_id:String(e.employeeId||e.employee_id||('EMP-'+(i+1))),
+      serial:String(e.serial||i+1),
+      name:String(e.name||''),
+      job:String(e.job||''),
+      nationality:String(e.nationality||''),
+      location:String(e.location||''),
+      data:e||{},
+      updated_at:new Date().toISOString()
+    };
+  }
+  function coursePayload(emp){
+    return (emp.courses||[]).map(c=>({
+      employee_id:String(emp.employeeId||emp.employee_id||''),
+      course_name:String(c.course||c.course_name||''),
+      obtained:String(c.obtained||''),
+      expiry_date:String(c.expiry||c.expiry_date||''),
+      certificate_url:(c.attachments&&c.attachments[0]&&c.attachments[0].data)||c.certificate_url||'',
+      data:c||{},
+      created_at:new Date().toISOString()
+    })).filter(x=>x.employee_id && x.course_name);
+  }
+  function certificatePayload(emp){
+    const rows=[];
+    (emp.courses||[]).forEach(c=>{
+      (c.attachments||[]).forEach(a=>rows.push({
+        employee_id:String(emp.employeeId||emp.employee_id||''),
+        employee_name:String(emp.name||''),
+        course_name:String(c.course||''),
+        file_name:String(a.name||a.file_name||'certificate'),
+        file_url:String(a.data||a.url||a.file_url||''),
+        data:a||{},
+        created_at:a.createdAt||new Date().toISOString()
+      }));
+    });
+    return rows;
+  }
+  function schedulePayload(){
+    return getSchedule().map(x=>({
+      employee_id:String(x.employeeId||''),
+      employee_name:String(x.employeeName||x.employee_name||''),
+      course_name:String(x.course||x.courseName||x.course_name||''),
+      schedule_date:String(x.date||x.schedule_date||''),
+      schedule_time:String(x.time||x.schedule_time||''),
+      status:String(x.status||''),
+      notes:String(x.notes||''),
+      data:x||{},
+      created_at:x.createdAt||new Date().toISOString()
+    }));
+  }
+  function logPayload(){
+    const d=getDb();
+    return (d.logs||[]).slice(-1000).map(l=>({
+      action_type:String(l.type||l.action_type||l.action||''),
+      employee_id:String(l.employeeId||''),
+      employee_name:String(l.employeeName||l.employee_name||''),
+      details:String(l.details||l.text||l.message||JSON.stringify(l)),
+      data:l||{},
+      created_at:l.at||l.createdAt||new Date().toISOString()
+    }));
+  }
+  async function syncNormalizedTables(){
+    const d=getDb();
+    const employees=(d.employees||[]).map(empPayload);
+    const courses=[]; const certs=[];
+    (d.employees||[]).forEach(e=>{ courses.push(...coursePayload(e)); certs.push(...certificatePayload(e)); });
+    const schedules=schedulePayload();
+    const logs=logPayload();
+
+    // حذف ثم إعادة إدخال لضمان عدم وجود تكرار عند تغيير الداتا
+    await sb.from('employee_courses').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    await sb.from('certificates').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    await sb.from('schedules').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    await sb.from('logs').delete().neq('id','00000000-0000-0000-0000-000000000000');
+
+    if(employees.length){
+      const {error}=await sb.from('employees').upsert(employees,{onConflict:'employee_id'});
+      if(error) throw error;
+    }
+    if(courses.length){
+      const {error}=await sb.from('employee_courses').insert(courses);
+      if(error) throw error;
+    }
+    if(schedules.length){
+      const {error}=await sb.from('schedules').insert(schedules);
+      if(error) throw error;
+    }
+    if(certs.length){
+      const {error}=await sb.from('certificates').insert(certs);
+      if(error) throw error;
+    }
+    if(logs.length){
+      const {error}=await sb.from('logs').insert(logs);
+      if(error) throw error;
+    }
+    return {employees:employees.length,courses:courses.length,schedules:schedules.length,certificates:certs.length,logs:logs.length};
+  }
   window.cloudSave=async function(silent){
     if(syncing) return;
-    if(!initClient()) { if(!silent) alert('أدخل رابط Supabase و anon key أولاً من زر إعدادات قاعدة البيانات'); return; }
-    syncing=true; updateCloudStatus('wait','جاري الحفظ على قاعدة البيانات...');
+    if(!initClient()) { if(!silent) alert('الاتصال غير جاهز. تأكد من الإنترنت وتحميل مكتبة Supabase.'); return; }
+    syncing=true; updateCloudStatus('wait','جاري حفظ كل البيانات في Supabase...');
     try{
       const payload=collectState();
       const {error}=await sb.from('training_app_state').upsert({app_key:APP_KEY,payload,updated_at:new Date().toISOString()},{onConflict:'app_key'});
       if(error) throw error;
-      notify('تم الحفظ على قاعدة البيانات بنجاح','on');
-    }catch(e){ console.error(e); updateCloudStatus('off','فشل الحفظ: '+(e.message||e)); if(!silent) alert('فشل الحفظ على قاعدة البيانات:\n'+(e.message||e)); }
+      const counts=await syncNormalizedTables();
+      const msg=`تم الحفظ: ${counts.employees} موظف / ${counts.courses} دورة / ${counts.schedules} جدولة`;
+      notify(msg,'on');
+      if(!silent) alert('تم تسجيل كل البيانات في قاعدة البيانات ✅\n'+msg);
+    }catch(e){ console.error('SUPABASE SAVE ERROR:',e); updateCloudStatus('off','فشل الحفظ: '+(e.message||e)); if(!silent) alert('فشل الحفظ في Supabase:\n'+(e.message||e)+'\n\nغالبًا لم يتم تنفيذ SQL V10 أو صلاحيات RLS غير مفعلة.'); }
     finally{syncing=false;}
   };
+  window.cloudForceSave=()=>window.cloudSave(false);
   window.cloudLoad=async function(){
-    if(!initClient()) {alert('أدخل رابط Supabase و anon key أولاً'); return;}
+    if(!initClient()) {alert('الاتصال غير جاهز'); return;}
     updateCloudStatus('wait','جاري تحميل البيانات من قاعدة البيانات...');
     try{
       const {data,error}=await sb.from('training_app_state').select('payload,updated_at').eq('app_key',APP_KEY).maybeSingle();
       if(error) throw error;
-      if(!data){ alert('لا توجد بيانات محفوظة على قاعدة البيانات حتى الآن. اضغط حفظ إلى قاعدة البيانات أولاً.'); updateCloudStatus('off','لا توجد بيانات سحابية'); return; }
+      if(!data){ alert('لا توجد بيانات محفوظة في training_app_state حتى الآن. اضغط رفع كل البيانات DB.'); updateCloudStatus('off','لا توجد بيانات سحابية'); return; }
       applyState(data.payload);
       notify('تم تحميل البيانات من قاعدة البيانات','on');
     }catch(e){ console.error(e); updateCloudStatus('off','فشل التحميل: '+(e.message||e)); alert('فشل التحميل من قاعدة البيانات:\n'+(e.message||e)); }
   };
   window.cloudTest=async function(){
-    if(!initClient()) {alert('بيانات الربط ناقصة أو مكتبة Supabase لم تحمل'); return;}
+    if(!initClient()) {alert('الاتصال غير جاهز أو مكتبة Supabase لم تحمل'); return;}
     try{
-      const {error}=await sb.from('training_app_state').select('app_key').limit(1);
-      if(error) throw error;
-      notify('الاتصال بقاعدة البيانات شغال','on'); alert('الاتصال بقاعدة البيانات شغال ✅');
-    }catch(e){ updateCloudStatus('off','فشل الاتصال'); alert('فشل الاتصال. تأكد أنك نفذت ملف SQL وأن الرابط والمفتاح صحيحين:\n'+(e.message||e)); }
+      const tests=['training_app_state','employees','employee_courses','schedules','certificates','logs'];
+      for(const t of tests){
+        const {error}=await sb.from(t).select('*').limit(1);
+        if(error) throw new Error(t+': '+error.message);
+      }
+      notify('الاتصال والجداول شغالين','on'); alert('الاتصال والجداول شغالين ✅');
+    }catch(e){ updateCloudStatus('off','فشل الاتصال'); alert('فشل الاختبار:\n'+(e.message||e)+'\n\nنفّذ ملف SQL V10 أولاً.'); }
   };
   window.openCloudSettings=function(){
     const c=getConfig();
     document.getElementById('modalTitle').textContent='إعدادات قاعدة البيانات Supabase';
     document.getElementById('modalBody').innerHTML=`
-      <div class="smallNote">اكتب بيانات مشروع Supabase. استخدم <b>anon public key</b> فقط، ولا تضع service_role داخل ملف HTML.</div>
+      <div class="smallNote">الربط ثابت داخل الكود. بعد تنفيذ SQL V10 اضغط اختبار الاتصال ثم رفع كل البيانات DB.</div>
       <div class="cloudPanel">
-        <div class="field full"><label>Supabase Project URL - ثابت داخل الكود</label><input id="sbUrl" dir="ltr" value="${esc(c.url||'')}" readonly></div>
-        <div class="field full"><label>Supabase publishable key - ثابت داخل الكود</label><input id="sbAnon" dir="ltr" value="${esc(c.anonKey||'')}" readonly></div>
+        <div class="field full"><label>Supabase Project URL</label><input id="sbUrl" dir="ltr" value="${esc(c.url||'')}" readonly></div>
+        <div class="field full"><label>Supabase publishable key</label><input id="sbAnon" dir="ltr" value="${esc(c.anonKey||'')}" readonly></div>
         <div class="field"><label>Auto Sync</label><select id="sbAuto"><option value="false" ${!c.autoSync?'selected':''}>إيقاف</option><option value="true" ${c.autoSync?'selected':''}>تشغيل الحفظ التلقائي</option></select></div>
-        <div class="field"><label>اسم الجدول</label><input value="training_app_state" readonly dir="ltr"></div>
+        <div class="field"><label>الجداول</label><input value="employees / employee_courses / schedules / certificates / logs" readonly dir="ltr"></div>
       </div>
       <div class="cloudActions">
         <button class="success" onclick="saveCloudSettings()">حفظ الإعدادات</button>
         <button onclick="cloudTest()">اختبار الاتصال</button>
-        <button onclick="cloudSave(false)">حفظ البيانات الآن</button>
+        <button class="success" onclick="cloudForceSave()">رفع كل البيانات DB</button>
         <button onclick="cloudLoad()">تحميل من القاعدة</button>
       </div>
-      <p class="smallNote">قبل الاختبار: افتح Supabase → SQL Editor → نفذ ملف SQL المرفق مع النسخة.</p>`;
+      <p class="smallNote">لو الاختبار فشل: نفّذ ملف SQL V10 في Supabase SQL Editor.</p>`;
     document.getElementById('modal').classList.add('show');
   };
   window.saveCloudSettings=function(){
@@ -613,14 +723,15 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     const cls=type==='on'?'on':(type==='wait'?'':'off');
     el.innerHTML=`<span class="cloudDot ${cls}"></span><span>${esc(msg||'قاعدة البيانات')}</span>`;
   };
+  function delayedAutoSave(){ if(!getConfig().autoSync) return; clearTimeout(lastTimer); lastTimer=setTimeout(()=>window.cloudSave(true),900); }
   const oldSaveDb=window.saveDb;
-  window.saveDb=function(){ if(oldSaveDb) oldSaveDb(); else localStorage.setItem('trainingSystemFirstSheet',JSON.stringify(db)); if(getConfig().autoSync) window.cloudSave(true); };
+  window.saveDb=function(){ if(oldSaveDb) oldSaveDb(); else localStorage.setItem('trainingSystemFirstSheet',JSON.stringify(getDb())); delayedAutoSave(); };
   const oldSetItem=localStorage.setItem.bind(localStorage);
-  localStorage.setItem=function(k,v){ oldSetItem(k,v); if(k===STATE_KEY && getConfig().autoSync) setTimeout(()=>window.cloudSave(true),200); };
+  localStorage.setItem=function(k,v){ oldSetItem(k,v); if(k===STATE_KEY) delayedAutoSave(); };
   document.addEventListener('DOMContentLoaded',()=>{
     const actions=document.querySelector('.actions');
-    if(actions && !document.getElementById('cloudSettingsBtn')) actions.insertAdjacentHTML('afterbegin','<span id="cloudStatus" class="cloudStatus"><span class="cloudDot off"></span><span>قاعدة البيانات متصلة تلقائيًا</span></span><button id="cloudSettingsBtn" class="success" onclick="openCloudSettings()">إعدادات قاعدة البيانات</button><button onclick="cloudSave(false)">حفظ Cloud</button><button onclick="cloudLoad()">تحميل Cloud</button>');
-    if(initClient()) setTimeout(()=>window.cloudLoad && window.cloudLoad(),700);
+    if(actions && !document.getElementById('cloudSettingsBtn')) actions.insertAdjacentHTML('afterbegin','<span id="cloudStatus" class="cloudStatus"><span class="cloudDot off"></span><span>قاعدة البيانات</span></span><button id="cloudSettingsBtn" class="success" onclick="openCloudSettings()">إعدادات قاعدة البيانات</button><button class="success" onclick="cloudForceSave()">رفع كل البيانات DB</button><button onclick="cloudLoad()">تحميل Cloud</button>');
+    initClient();
   });
 })();
 
