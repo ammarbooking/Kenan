@@ -94,7 +94,7 @@ button{transition:.2s}button:active{transform:scale(.98)}
 .cloudPanel{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cloudPanel .field.full{grid-column:1/-1}.cloudActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.cloudCode{direction:ltr;text-align:left;background:rgba(0,0,0,.28);padding:10px;border-radius:12px;overflow:auto;font-size:12px}
 @media(max-width:800px){.cloudPanel{grid-template-columns:1fr}}
 
-</style></head><body><div class="app"><aside><div class="logo">⚡ Training System <span class="ver">V7</span></div><div class="sub">نظام إدارة تدريبات الموظفين<br>الشيت: Traning Plan-Jazan & makkah<br>نسخة مصححة: جدولة الأسبوع القادم من الموظفين الموجودين + الدورات</div><nav><button class="active" onclick="show('dashboard',this)">لوحة التحكم</button><button onclick="show('employees',this)">الموظفين</button><button onclick="show('courses',this)">الدورات</button><button onclick="show('alerts',this)">التنبيهات</button><button onclick="show('reports',this)">التقارير</button><button onclick="show('schedule',this)">جدولة الأسبوع القادم</button><button onclick="show('logs',this)">سجل التعديلات</button></nav><div class="footer">البيانات محفوظة داخل ملف HTML وتعمل بدون إنترنت.</div></aside><main><div class="top"><div class="title"><h1 id="pageTitle">لوحة التحكم</h1><p>بحث وفلترة وإدارة كاملة لبيانات التدريب من الشيت الأول فقط.</p></div><div class="actions"><button class="success" onclick="openAddEmployee()">+ إضافة موظف</button><button class="success" onclick="exportExcelProfessional('all')">تصدير Excel شامل</button><button onclick="exportExcelProfessional('filtered')">تصدير Excel للفلترة الحالية</button><button onclick="printProfessional('all')">طباعة تقرير كامل</button><button onclick="printProfessional('alerts')">طباعة التنبيهات</button><button class="success" onclick="exportPDFProfessional('all')">تصدير PDF</button><button onclick="exportCSV()">تصدير CSV</button><label class="btn uploadBtn">رفع Excel/CSV<input id="importFile" type="file" accept=".xlsx,.xls,.csv" onchange="importFileData(this.files[0])"></label><button onclick="backupData()">Backup JSON</button><label class="btn uploadBtn">Restore<input type="file" accept=".json" onchange="restoreData(this.files[0])"></label><button onclick="toggleTheme()">تبديل الوضع</button><button onclick="resetLocal()">استرجاع الأصل</button></div></div>
+</style></head><body><div class="app"><aside><div class="logo">⚡ Training System <span class="ver">V11</span></div><div class="sub">نظام إدارة تدريبات الموظفين<br>الشيت: Traning Plan-Jazan & makkah<br>نسخة V11: إصلاح حفظ الجدولة وقاعدة البيانات</div><nav><button class="active" onclick="show('dashboard',this)">لوحة التحكم</button><button onclick="show('employees',this)">الموظفين</button><button onclick="show('courses',this)">الدورات</button><button onclick="show('alerts',this)">التنبيهات</button><button onclick="show('reports',this)">التقارير</button><button onclick="show('schedule',this)">جدولة الأسبوع القادم</button><button onclick="show('logs',this)">سجل التعديلات</button></nav><div class="footer">البيانات محفوظة داخل ملف HTML وتعمل بدون إنترنت.</div></aside><main><div class="top"><div class="title"><h1 id="pageTitle">لوحة التحكم</h1><p>بحث وفلترة وإدارة كاملة لبيانات التدريب من الشيت الأول فقط.</p></div><div class="actions"><button class="success" onclick="openAddEmployee()">+ إضافة موظف</button><button class="success" onclick="exportExcelProfessional('all')">تصدير Excel شامل</button><button onclick="exportExcelProfessional('filtered')">تصدير Excel للفلترة الحالية</button><button onclick="printProfessional('all')">طباعة تقرير كامل</button><button onclick="printProfessional('alerts')">طباعة التنبيهات</button><button class="success" onclick="exportPDFProfessional('all')">تصدير PDF</button><button onclick="exportCSV()">تصدير CSV</button><label class="btn uploadBtn">رفع Excel/CSV<input id="importFile" type="file" accept=".xlsx,.xls,.csv" onchange="importFileData(this.files[0])"></label><button onclick="backupData()">Backup JSON</button><label class="btn uploadBtn">Restore<input type="file" accept=".json" onchange="restoreData(this.files[0])"></label><button onclick="toggleTheme()">تبديل الوضع</button><button onclick="resetLocal()">استرجاع الأصل</button></div></div>
 <section id="dashboard" class="view"><div class="grid" id="kpis"></div><div class="charts"><div class="panel"><h2>تحليل الحالات</h2><canvas id="statusChart" height="230"></canvas></div><div class="panel"><h2>أعلى الدورات قربًا للمشكلة</h2><canvas id="courseChart" height="230"></canvas></div></div><div class="panel"><h2>ملخص الدورات</h2><div class="courseGrid" id="courseSummary"></div></div></section>
 <section id="employees" class="view hide"><div class="panel filterPanel"><div class="filters"><input id="q" placeholder="بحث بالاسم / الإقامة / المهنة"><select id="loc"><option value="">كل المواقع</option></select><select id="nat"><option value="">كل الجنسيات</option></select><select id="job"><option value="">كل المهن</option></select><select id="course"><option value="">كل الدورات</option></select><select id="state"><option value="">كل الحالات</option><option value="valid">ساري</option><option value="soon">قارب الانتهاء</option><option value="expired">منتهي</option><option value="not">لم يحصل</option></select></div><div class="filterActions"><button class="primary" onclick="applyFilters(true)">تطبيق الفلتر</button><button onclick="clearFilters()">مسح الفلاتر</button><button onclick="quickAlerts()">عرض المنتهي والقريب</button><span id="filterSummary" class="filterSummary">لا توجد فلاتر مفعلة</span></div></div><div class="panel"><div class="tableTools"><b>قائمة الموظفين</b><span id="rowCounter" class="muted"></span></div><div class="tablewrap"><table id="empTable"></table></div></div></section>
 <section id="courses" class="view hide"><div class="panel"><div class="courseGrid" id="coursesFull"></div></div></section>
@@ -406,8 +406,21 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
 (function(){
   const SKEY='training_next_week_schedule_v1';
   function uid(){return 'SCH-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
-  function loadSchedule(){try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch(e){return []}}
-  function saveSchedule(list){localStorage.setItem(SKEY,JSON.stringify(list||[]))}
+  function normalizeSchedule(v){
+    if(Array.isArray(v)) return v;
+    if(typeof v==='string'){
+      try{return normalizeSchedule(JSON.parse(v||'[]'))}catch(e){return []}
+    }
+    if(v && typeof v==='object'){
+      if(Array.isArray(v.schedule)) return v.schedule;
+      if(Array.isArray(v.rows)) return v.rows;
+      if(Array.isArray(v.data)) return v.data;
+      if(Array.isArray(v.items)) return v.items;
+    }
+    return [];
+  }
+  function loadSchedule(){return normalizeSchedule(localStorage.getItem(SKEY))}
+  function saveSchedule(list){localStorage.setItem(SKEY,JSON.stringify(normalizeSchedule(list)))}
   function nextWeekRange(){
     const now=new Date(); const day=now.getDay();
     const daysToNextSat=(6-day+7)%7 || 7;
@@ -532,13 +545,26 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
   let lastTimer=null;
 
   function safeJsonParse(v,fb){try{return JSON.parse(v||'')}catch(e){return fb}}
+  function normalizeScheduleForDb(v){
+    if(Array.isArray(v)) return v;
+    if(typeof v==='string'){
+      try{return normalizeScheduleForDb(JSON.parse(v||'[]'))}catch(e){return []}
+    }
+    if(v && typeof v==='object'){
+      if(Array.isArray(v.schedule)) return v.schedule;
+      if(Array.isArray(v.rows)) return v.rows;
+      if(Array.isArray(v.data)) return v.data;
+      if(Array.isArray(v.items)) return v.items;
+    }
+    return [];
+  }
   function getConfig(){
     const saved=safeJsonParse(localStorage.getItem(CONFIG_KEY),{})||{};
     return {url:FIXED_SUPABASE_URL,anonKey:FIXED_SUPABASE_KEY,autoSync:saved.autoSync!==false};
   }
   function setConfig(c){localStorage.setItem(CONFIG_KEY,JSON.stringify(c||{}));}
   function getDb(){return (typeof db!=='undefined' && db) ? db : (window.trainingDb||{employees:[],courseNames:[],logs:[]});}
-  function getSchedule(){return safeJsonParse(localStorage.getItem(STATE_KEY),'[]')||[];}
+  function getSchedule(){return normalizeScheduleForDb(localStorage.getItem(STATE_KEY));}
   function notify(msg,type){ if(typeof toast==='function') toast(msg); else console.log(msg); updateCloudStatus(type,msg); }
   function initClient(){
     const c=getConfig();
@@ -546,7 +572,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     sb=null; updateCloudStatus('off','غير متصل - مكتبة Supabase لم تحمل'); return false;
   }
   function collectState(){
-    return {version:'V10_FORCE_DATABASE_SAVE',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
+    return {version:'V11_SCHEDULE_DB_FIXED',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
   }
   function applyState(state){
     if(!state) return;
@@ -596,7 +622,8 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     return rows;
   }
   function schedulePayload(){
-    return getSchedule().map(x=>({
+    const list = normalizeScheduleForDb(getSchedule());
+    return list.map(x=>({
       employee_id:String(x.employeeId||''),
       employee_name:String(x.employeeName||x.employee_name||''),
       course_name:String(x.course||x.courseName||x.course_name||''),
@@ -697,7 +724,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     const c=getConfig();
     document.getElementById('modalTitle').textContent='إعدادات قاعدة البيانات Supabase';
     document.getElementById('modalBody').innerHTML=`
-      <div class="smallNote">الربط ثابت داخل الكود. بعد تنفيذ SQL V10 اضغط اختبار الاتصال ثم رفع كل البيانات DB.</div>
+      <div class="smallNote">الربط ثابت داخل الكود. نسخة V11 تصلح خطأ getSchedule().map وتحفظ الجدولة والموظفين في DB.</div>
       <div class="cloudPanel">
         <div class="field full"><label>Supabase Project URL</label><input id="sbUrl" dir="ltr" value="${esc(c.url||'')}" readonly></div>
         <div class="field full"><label>Supabase publishable key</label><input id="sbAnon" dir="ltr" value="${esc(c.anonKey||'')}" readonly></div>
