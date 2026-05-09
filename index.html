@@ -94,7 +94,7 @@ button{transition:.2s}button:active{transform:scale(.98)}
 .cloudPanel{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cloudPanel .field.full{grid-column:1/-1}.cloudActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.cloudCode{direction:ltr;text-align:left;background:rgba(0,0,0,.28);padding:10px;border-radius:12px;overflow:auto;font-size:12px}
 @media(max-width:800px){.cloudPanel{grid-template-columns:1fr}}
 
-</style></head><body><div class="app"><aside><div class="logo">⚡ Training System <span class="ver">V12</span></div><div class="sub">نظام إدارة تدريبات الموظفين<br>الشيت: Traning Plan-Jazan & makkah<br>نسخة V12: إصلاح نهائي getSchedule وتحويل الجدولة لقائمة قبل الحفظ</div><nav><button class="active" onclick="show('dashboard',this)">لوحة التحكم</button><button onclick="show('employees',this)">الموظفين</button><button onclick="show('courses',this)">الدورات</button><button onclick="show('alerts',this)">التنبيهات</button><button onclick="show('reports',this)">التقارير</button><button onclick="show('schedule',this)">جدولة الأسبوع القادم</button><button onclick="show('logs',this)">سجل التعديلات</button></nav><div class="footer">البيانات محفوظة داخل ملف HTML وتعمل بدون إنترنت.</div></aside><main><div class="top"><div class="title"><h1 id="pageTitle">لوحة التحكم</h1><p>بحث وفلترة وإدارة كاملة لبيانات التدريب من الشيت الأول فقط.</p></div><div class="actions"><button class="success" onclick="openAddEmployee()">+ إضافة موظف</button><button class="success" onclick="exportExcelProfessional('all')">تصدير Excel شامل</button><button onclick="exportExcelProfessional('filtered')">تصدير Excel للفلترة الحالية</button><button onclick="printProfessional('all')">طباعة تقرير كامل</button><button onclick="printProfessional('alerts')">طباعة التنبيهات</button><button class="success" onclick="exportPDFProfessional('all')">تصدير PDF</button><button onclick="exportCSV()">تصدير CSV</button><label class="btn uploadBtn">رفع Excel/CSV<input id="importFile" type="file" accept=".xlsx,.xls,.csv" onchange="importFileData(this.files[0])"></label><button onclick="backupData()">Backup JSON</button><label class="btn uploadBtn">Restore<input type="file" accept=".json" onchange="restoreData(this.files[0])"></label><button onclick="toggleTheme()">تبديل الوضع</button><button onclick="resetLocal()">استرجاع الأصل</button></div></div>
+</style></head><body><div class="app"><aside><div class="logo">⚡ Training System <span class="ver">V13</span></div><div class="sub">نظام إدارة تدريبات الموظفين<br>الشيت: Traning Plan-Jazan & makkah<br>نسخة V13: إصلاح تواريخ Supabase وحفظ كل البيانات بدون أخطاء timestamp</div><nav><button class="active" onclick="show('dashboard',this)">لوحة التحكم</button><button onclick="show('employees',this)">الموظفين</button><button onclick="show('courses',this)">الدورات</button><button onclick="show('alerts',this)">التنبيهات</button><button onclick="show('reports',this)">التقارير</button><button onclick="show('schedule',this)">جدولة الأسبوع القادم</button><button onclick="show('logs',this)">سجل التعديلات</button></nav><div class="footer">البيانات محفوظة داخل ملف HTML وتعمل بدون إنترنت.</div></aside><main><div class="top"><div class="title"><h1 id="pageTitle">لوحة التحكم</h1><p>بحث وفلترة وإدارة كاملة لبيانات التدريب من الشيت الأول فقط.</p></div><div class="actions"><button class="success" onclick="openAddEmployee()">+ إضافة موظف</button><button class="success" onclick="exportExcelProfessional('all')">تصدير Excel شامل</button><button onclick="exportExcelProfessional('filtered')">تصدير Excel للفلترة الحالية</button><button onclick="printProfessional('all')">طباعة تقرير كامل</button><button onclick="printProfessional('alerts')">طباعة التنبيهات</button><button class="success" onclick="exportPDFProfessional('all')">تصدير PDF</button><button onclick="exportCSV()">تصدير CSV</button><label class="btn uploadBtn">رفع Excel/CSV<input id="importFile" type="file" accept=".xlsx,.xls,.csv" onchange="importFileData(this.files[0])"></label><button onclick="backupData()">Backup JSON</button><label class="btn uploadBtn">Restore<input type="file" accept=".json" onchange="restoreData(this.files[0])"></label><button onclick="toggleTheme()">تبديل الوضع</button><button onclick="resetLocal()">استرجاع الأصل</button></div></div>
 <section id="dashboard" class="view"><div class="grid" id="kpis"></div><div class="charts"><div class="panel"><h2>تحليل الحالات</h2><canvas id="statusChart" height="230"></canvas></div><div class="panel"><h2>أعلى الدورات قربًا للمشكلة</h2><canvas id="courseChart" height="230"></canvas></div></div><div class="panel"><h2>ملخص الدورات</h2><div class="courseGrid" id="courseSummary"></div></div></section>
 <section id="employees" class="view hide"><div class="panel filterPanel"><div class="filters"><input id="q" placeholder="بحث بالاسم / الإقامة / المهنة"><select id="loc"><option value="">كل المواقع</option></select><select id="nat"><option value="">كل الجنسيات</option></select><select id="job"><option value="">كل المهن</option></select><select id="course"><option value="">كل الدورات</option></select><select id="state"><option value="">كل الحالات</option><option value="valid">ساري</option><option value="soon">قارب الانتهاء</option><option value="expired">منتهي</option><option value="not">لم يحصل</option></select></div><div class="filterActions"><button class="primary" onclick="applyFilters(true)">تطبيق الفلتر</button><button onclick="clearFilters()">مسح الفلاتر</button><button onclick="quickAlerts()">عرض المنتهي والقريب</button><span id="filterSummary" class="filterSummary">لا توجد فلاتر مفعلة</span></div></div><div class="panel"><div class="tableTools"><b>قائمة الموظفين</b><span id="rowCounter" class="muted"></span></div><div class="tablewrap"><table id="empTable"></table></div></div></section>
 <section id="courses" class="view hide"><div class="panel"><div class="courseGrid" id="coursesFull"></div></div></section>
@@ -601,6 +601,22 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
   let lastTimer=null;
 
   function safeJsonParse(v,fb){try{return JSON.parse(v||'')}catch(e){return fb}}
+  function safeIsoDate(v){
+    if(!v) return new Date().toISOString();
+    if(v instanceof Date && !isNaN(v)) return v.toISOString();
+    const s=String(v).trim();
+    if(!s) return new Date().toISOString();
+    // يقبل ISO فقط؛ أي تاريخ عربي/محلي يتم استبداله بتاريخ حالي صالح لعمود timestamptz
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
+      const d=new Date(s);
+      if(!isNaN(d)) return d.toISOString();
+    }
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+      const d=new Date(s+'T00:00:00Z');
+      if(!isNaN(d)) return d.toISOString();
+    }
+    return new Date().toISOString();
+  }
   function normalizeScheduleForDb(v){
     if(Array.isArray(v)) return v;
     if(typeof v==='string'){
@@ -628,7 +644,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     sb=null; updateCloudStatus('off','غير متصل - مكتبة Supabase لم تحمل'); return false;
   }
   function collectState(){
-    return {version:'V12_FINAL_DB_SAVE_FIXED',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
+    return {version:'V13_TIMESTAMP_FIXED',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
   }
   function applyState(state){
     if(!state) return;
@@ -659,7 +675,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
       expiry_date:String(c.expiry||c.expiry_date||''),
       certificate_url:(c.attachments&&c.attachments[0]&&c.attachments[0].data)||c.certificate_url||'',
       data:c||{},
-      created_at:new Date().toISOString()
+      created_at:safeIsoDate()
     })).filter(x=>x.employee_id && x.course_name);
   }
   function certificatePayload(emp){
@@ -672,7 +688,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
         file_name:String(a.name||a.file_name||'certificate'),
         file_url:String(a.data||a.url||a.file_url||''),
         data:a||{},
-        created_at:a.createdAt||new Date().toISOString()
+        created_at:safeIsoDate(a.createdAt||a.created_at)
       }));
     });
     return rows;
@@ -690,7 +706,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
       status:String(x.status||''),
       notes:String(x.notes||''),
       data:x||{},
-      created_at:x.createdAt||x.created_at||new Date().toISOString()
+      created_at:safeIsoDate(x.createdAt||x.created_at)
     }));
   }
   function logPayload(){
@@ -701,7 +717,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
       employee_name:String(l.employeeName||l.employee_name||''),
       details:String(l.details||l.text||l.message||JSON.stringify(l)),
       data:l||{},
-      created_at:l.at||l.createdAt||new Date().toISOString()
+      created_at:safeIsoDate(l.at||l.createdAt||l.created_at)
     }));
   }
   async function syncNormalizedTables(){
