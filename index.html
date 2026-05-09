@@ -94,7 +94,7 @@ button{transition:.2s}button:active{transform:scale(.98)}
 .cloudPanel{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cloudPanel .field.full{grid-column:1/-1}.cloudActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.cloudCode{direction:ltr;text-align:left;background:rgba(0,0,0,.28);padding:10px;border-radius:12px;overflow:auto;font-size:12px}
 @media(max-width:800px){.cloudPanel{grid-template-columns:1fr}}
 
-</style></head><body><div class="app"><aside><div class="logo">⚡ Training System <span class="ver">V12</span></div><div class="sub">نظام إدارة تدريبات الموظفين<br>الشيت: Traning Plan-Jazan & makkah<br>نسخة V12: إصلاح نهائي getSchedule وتحويل الجدولة لقائمة قبل الحفظ</div><nav><button class="active" onclick="show('dashboard',this)">لوحة التحكم</button><button onclick="show('employees',this)">الموظفين</button><button onclick="show('courses',this)">الدورات</button><button onclick="show('alerts',this)">التنبيهات</button><button onclick="show('reports',this)">التقارير</button><button onclick="show('schedule',this)">جدولة الأسبوع القادم</button><button onclick="show('logs',this)">سجل التعديلات</button></nav><div class="footer">البيانات محفوظة داخل ملف HTML وتعمل بدون إنترنت.</div></aside><main><div class="top"><div class="title"><h1 id="pageTitle">لوحة التحكم</h1><p>بحث وفلترة وإدارة كاملة لبيانات التدريب من الشيت الأول فقط.</p></div><div class="actions"><button class="success" onclick="openAddEmployee()">+ إضافة موظف</button><button class="success" onclick="exportExcelProfessional('all')">تصدير Excel شامل</button><button onclick="exportExcelProfessional('filtered')">تصدير Excel للفلترة الحالية</button><button onclick="printProfessional('all')">طباعة تقرير كامل</button><button onclick="printProfessional('alerts')">طباعة التنبيهات</button><button class="success" onclick="exportPDFProfessional('all')">تصدير PDF</button><button onclick="exportCSV()">تصدير CSV</button><label class="btn uploadBtn">رفع Excel/CSV<input id="importFile" type="file" accept=".xlsx,.xls,.csv" onchange="importFileData(this.files[0])"></label><button onclick="backupData()">Backup JSON</button><label class="btn uploadBtn">Restore<input type="file" accept=".json" onchange="restoreData(this.files[0])"></label><button onclick="toggleTheme()">تبديل الوضع</button><button onclick="resetLocal()">استرجاع الأصل</button></div></div>
+</style></head><body><div class="app"><aside><div class="logo">⚡ Training System <span class="ver">V11</span></div><div class="sub">نظام إدارة تدريبات الموظفين<br>الشيت: Traning Plan-Jazan & makkah<br>نسخة V11: إصلاح حفظ الجدولة وقاعدة البيانات</div><nav><button class="active" onclick="show('dashboard',this)">لوحة التحكم</button><button onclick="show('employees',this)">الموظفين</button><button onclick="show('courses',this)">الدورات</button><button onclick="show('alerts',this)">التنبيهات</button><button onclick="show('reports',this)">التقارير</button><button onclick="show('schedule',this)">جدولة الأسبوع القادم</button><button onclick="show('logs',this)">سجل التعديلات</button></nav><div class="footer">البيانات محفوظة داخل ملف HTML وتعمل بدون إنترنت.</div></aside><main><div class="top"><div class="title"><h1 id="pageTitle">لوحة التحكم</h1><p>بحث وفلترة وإدارة كاملة لبيانات التدريب من الشيت الأول فقط.</p></div><div class="actions"><button class="success" onclick="openAddEmployee()">+ إضافة موظف</button><button class="success" onclick="exportExcelProfessional('all')">تصدير Excel شامل</button><button onclick="exportExcelProfessional('filtered')">تصدير Excel للفلترة الحالية</button><button onclick="printProfessional('all')">طباعة تقرير كامل</button><button onclick="printProfessional('alerts')">طباعة التنبيهات</button><button class="success" onclick="exportPDFProfessional('all')">تصدير PDF</button><button onclick="exportCSV()">تصدير CSV</button><label class="btn uploadBtn">رفع Excel/CSV<input id="importFile" type="file" accept=".xlsx,.xls,.csv" onchange="importFileData(this.files[0])"></label><button onclick="backupData()">Backup JSON</button><label class="btn uploadBtn">Restore<input type="file" accept=".json" onchange="restoreData(this.files[0])"></label><button onclick="toggleTheme()">تبديل الوضع</button><button onclick="resetLocal()">استرجاع الأصل</button></div></div>
 <section id="dashboard" class="view"><div class="grid" id="kpis"></div><div class="charts"><div class="panel"><h2>تحليل الحالات</h2><canvas id="statusChart" height="230"></canvas></div><div class="panel"><h2>أعلى الدورات قربًا للمشكلة</h2><canvas id="courseChart" height="230"></canvas></div></div><div class="panel"><h2>ملخص الدورات</h2><div class="courseGrid" id="courseSummary"></div></div></section>
 <section id="employees" class="view hide"><div class="panel filterPanel"><div class="filters"><input id="q" placeholder="بحث بالاسم / الإقامة / المهنة"><select id="loc"><option value="">كل المواقع</option></select><select id="nat"><option value="">كل الجنسيات</option></select><select id="job"><option value="">كل المهن</option></select><select id="course"><option value="">كل الدورات</option></select><select id="state"><option value="">كل الحالات</option><option value="valid">ساري</option><option value="soon">قارب الانتهاء</option><option value="expired">منتهي</option><option value="not">لم يحصل</option></select></div><div class="filterActions"><button class="primary" onclick="applyFilters(true)">تطبيق الفلتر</button><button onclick="clearFilters()">مسح الفلاتر</button><button onclick="quickAlerts()">عرض المنتهي والقريب</button><span id="filterSummary" class="filterSummary">لا توجد فلاتر مفعلة</span></div></div><div class="panel"><div class="tableTools"><b>قائمة الموظفين</b><span id="rowCounter" class="muted"></span></div><div class="tablewrap"><table id="empTable"></table></div></div></section>
 <section id="courses" class="view hide"><div class="panel"><div class="courseGrid" id="coursesFull"></div></div></section>
@@ -236,21 +236,7 @@ function exportExcelProfessional(mode='all'){
   let title = mode==='filtered'?'تقرير التدريب - حسب الفلترة الحالية':'تقرير التدريب الكامل';
   let html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>body{font-family:Tahoma,Arial,sans-serif;direction:rtl}h1{margin:0 0 6px;color:#0f172a}.reportHeader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;border-bottom:3px solid #1d4ed8;padding-bottom:12px}.reportLogo{font-weight:bold;font-size:18px;color:#1d4ed8}.reportKpis{display:flex;gap:10px;margin:12px 0 18px}.reportKpis div{border:1px solid #cbd5e1;padding:10px 16px;border-radius:10px;background:#f8fafc}.reportKpis b{display:block;font-size:22px;color:#1d4ed8}.reportKpis span{font-size:12px;color:#334155}table{width:100%;border-collapse:collapse}th{background:#1e3a8a;color:white;font-weight:bold}td,th{border:1px solid #cbd5e1;padding:8px;text-align:right;white-space:nowrap}tr:nth-child(even){background:#f8fafc}
 .scheduleHead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}.scheduleActions{justify-content:flex-start}.scheduleFilters{grid-template-columns:2fr 1fr 1.5fr 1fr 1fr auto}.scheduleBadge{display:inline-flex;padding:5px 10px;border-radius:999px;font-weight:900;font-size:12px;border:1px solid var(--line)}.scheduleBadge.scheduled{background:rgba(96,165,250,.17);color:#bfdbfe}.scheduleBadge.done{background:rgba(34,197,94,.16);color:#86efac}.scheduleBadge.absent{background:rgba(239,68,68,.16);color:#fca5a5}.scheduleBadge.postponed{background:rgba(245,158,11,.17);color:#fcd34d}.scheduleBadge.cancelled{background:rgba(148,163,184,.18);color:#cbd5e1}.employeePick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.employeePick select{min-width:0}@media(max-width:900px){.scheduleFilters{grid-template-columns:1fr}.employeePick{grid-template-columns:1fr}}
-</style></head><body>${reportHeader(title,mode)}${buildReportTable(mode)}
-<script>
-// V12 final safety patch: normalize old/corrupted schedule storage before any DB save
-(function(){
-  const K='training_next_week_schedule_v1';
-  function norm(v){
-    if(Array.isArray(v)) return v;
-    if(typeof v==='string'){ try{return norm(JSON.parse(v||'[]'))}catch(e){return []} }
-    if(v && typeof v==='object') return Array.isArray(v.schedule)?v.schedule:Array.isArray(v.rows)?v.rows:Array.isArray(v.data)?v.data:Array.isArray(v.items)?v.items:[];
-    return [];
-  }
-  try{ localStorage.setItem(K, JSON.stringify(norm(localStorage.getItem(K)))); }catch(e){}
-})();
-</script>
-</body></html>`;
+</style></head><body>${reportHeader(title,mode)}${buildReportTable(mode)}</body></html>`;
   let blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});
   let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(mode==='filtered'?'training-filtered-report':'training-full-report')+'.xls';document.body.appendChild(a);a.click();a.remove();
 }
@@ -258,21 +244,7 @@ function printProfessional(mode='all'){
   let title = mode==='alerts'?'تقرير تنبيهات التدريب':(mode==='filtered'?'تقرير التدريب - حسب الفلترة الحالية':'تقرير التدريب الكامل');
   let html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${title}</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Tahoma,Arial,sans-serif;color:#111827;direction:rtl}.reportHeader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;border-bottom:3px solid #1d4ed8;padding-bottom:10px}h1{margin:0 0 6px;font-size:24px;color:#0f172a}p{margin:3px 0;color:#475569}.reportLogo{border:2px solid #1d4ed8;color:#1d4ed8;border-radius:12px;padding:10px 16px;font-weight:900}.reportKpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}.reportKpis div{border:1px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:10px;text-align:center}.reportKpis b{display:block;font-size:22px;color:#1d4ed8}.reportKpis span{font-size:12px;color:#475569}table{width:100%;border-collapse:collapse;font-size:10px}th{background:#1e3a8a;color:white}td,th{border:1px solid #cbd5e1;padding:6px;text-align:right;white-space:nowrap}tr:nth-child(even){background:#f8fafc}.footer{position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:#64748b;border-top:1px solid #cbd5e1;padding-top:4px}
 .scheduleHead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}.scheduleActions{justify-content:flex-start}.scheduleFilters{grid-template-columns:2fr 1fr 1.5fr 1fr 1fr auto}.scheduleBadge{display:inline-flex;padding:5px 10px;border-radius:999px;font-weight:900;font-size:12px;border:1px solid var(--line)}.scheduleBadge.scheduled{background:rgba(96,165,250,.17);color:#bfdbfe}.scheduleBadge.done{background:rgba(34,197,94,.16);color:#86efac}.scheduleBadge.absent{background:rgba(239,68,68,.16);color:#fca5a5}.scheduleBadge.postponed{background:rgba(245,158,11,.17);color:#fcd34d}.scheduleBadge.cancelled{background:rgba(148,163,184,.18);color:#cbd5e1}.employeePick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.employeePick select{min-width:0}@media(max-width:900px){.scheduleFilters{grid-template-columns:1fr}.employeePick{grid-template-columns:1fr}}
-</style></head><body>${reportHeader(title,mode)}${buildReportTable(mode)}<div class="footer">تم إنشاء التقرير من Training Management System</div><script>window.onload=()=>{setTimeout(()=>window.print(),300)}<\/script>
-<script>
-// V12 final safety patch: normalize old/corrupted schedule storage before any DB save
-(function(){
-  const K='training_next_week_schedule_v1';
-  function norm(v){
-    if(Array.isArray(v)) return v;
-    if(typeof v==='string'){ try{return norm(JSON.parse(v||'[]'))}catch(e){return []} }
-    if(v && typeof v==='object') return Array.isArray(v.schedule)?v.schedule:Array.isArray(v.rows)?v.rows:Array.isArray(v.data)?v.data:Array.isArray(v.items)?v.items:[];
-    return [];
-  }
-  try{ localStorage.setItem(K, JSON.stringify(norm(localStorage.getItem(K)))); }catch(e){}
-})();
-</script>
-</body></html>`;
+</style></head><body>${reportHeader(title,mode)}${buildReportTable(mode)}<div class="footer">تم إنشاء التقرير من Training Management System</div><script>window.onload=()=>{setTimeout(()=>window.print(),300)}<\/script></body></html>`;
   let w=window.open('','_blank');w.document.open();w.document.write(html);w.document.close();
 }
 
@@ -372,21 +344,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     const rows=e.courses.map((c,ci)=>`<tr><td>${esc(c.course)}</td><td>${esc(c.obtained)}</td><td>${esc(c.expiry||'')}</td><td>${stateArabic(status(c))}</td><td>${(c.attachments||[]).length}</td></tr>`).join('');
     const html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{size:A4 landscape;margin:10mm}body{font-family:Tahoma,Arial;color:#111}h1{color:#0f172a}.head{display:flex;justify-content:space-between;border-bottom:3px solid #1d4ed8;margin-bottom:12px}.box{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}.box div{border:1px solid #cbd5e1;border-radius:10px;padding:10px}table{width:100%;border-collapse:collapse;font-size:11px}td,th{border:1px solid #cbd5e1;padding:7px;text-align:right}th{background:#1e3a8a;color:white}.signatureBox{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}.signatureBox div{border-top:1px solid #94a3b8;padding-top:8px;text-align:center;color:#334155}
 .scheduleHead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}.scheduleActions{justify-content:flex-start}.scheduleFilters{grid-template-columns:2fr 1fr 1.5fr 1fr 1fr auto}.scheduleBadge{display:inline-flex;padding:5px 10px;border-radius:999px;font-weight:900;font-size:12px;border:1px solid var(--line)}.scheduleBadge.scheduled{background:rgba(96,165,250,.17);color:#bfdbfe}.scheduleBadge.done{background:rgba(34,197,94,.16);color:#86efac}.scheduleBadge.absent{background:rgba(239,68,68,.16);color:#fca5a5}.scheduleBadge.postponed{background:rgba(245,158,11,.17);color:#fcd34d}.scheduleBadge.cancelled{background:rgba(148,163,184,.18);color:#cbd5e1}.employeePick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.employeePick select{min-width:0}@media(max-width:900px){.scheduleFilters{grid-template-columns:1fr}.employeePick{grid-template-columns:1fr}}
-</style></head><body><div class="head"><div><h1>ملف موظف تدريبي</h1><p>${esc(e.name)} — ${esc(e.employeeId)}</p></div><b>Training System</b></div><div class="box"><div><b>${esc(e.job)}</b><br>المهنة</div><div><b>${esc(e.location)}</b><br>الموقع</div><div><b>${esc(e.nationality)}</b><br>الجنسية</div><div><b>${miss.length}</b><br>نواقص إلزامية</div></div><p><b>الدورات الناقصة/المطلوبة:</b> ${miss.length?miss.map(esc).join(' — '):'لا يوجد'}</p><table><tr><th>الدورة</th><th>الحصول</th><th>الانتهاء</th><th>الحالة</th><th>عدد المرفقات</th></tr>${rows}</table><div class="signatureBox"><div>إعداد</div><div>مراجعة</div><div>اعتماد</div></div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script>
-<script>
-// V12 final safety patch: normalize old/corrupted schedule storage before any DB save
-(function(){
-  const K='training_next_week_schedule_v1';
-  function norm(v){
-    if(Array.isArray(v)) return v;
-    if(typeof v==='string'){ try{return norm(JSON.parse(v||'[]'))}catch(e){return []} }
-    if(v && typeof v==='object') return Array.isArray(v.schedule)?v.schedule:Array.isArray(v.rows)?v.rows:Array.isArray(v.data)?v.data:Array.isArray(v.items)?v.items:[];
-    return [];
-  }
-  try{ localStorage.setItem(K, JSON.stringify(norm(localStorage.getItem(K)))); }catch(e){}
-})();
-</script>
-</body></html>`;
+</style></head><body><div class="head"><div><h1>ملف موظف تدريبي</h1><p>${esc(e.name)} — ${esc(e.employeeId)}</p></div><b>Training System</b></div><div class="box"><div><b>${esc(e.job)}</b><br>المهنة</div><div><b>${esc(e.location)}</b><br>الموقع</div><div><b>${esc(e.nationality)}</b><br>الجنسية</div><div><b>${miss.length}</b><br>نواقص إلزامية</div></div><p><b>الدورات الناقصة/المطلوبة:</b> ${miss.length?miss.map(esc).join(' — '):'لا يوجد'}</p><table><tr><th>الدورة</th><th>الحصول</th><th>الانتهاء</th><th>الحالة</th><th>عدد المرفقات</th></tr>${rows}</table><div class="signatureBox"><div>إعداد</div><div>مراجعة</div><div>اعتماد</div></div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`;
     const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close();
   };
   const oldRenderAdvancedStats=window.renderAdvancedStats;
@@ -563,21 +521,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
   }
   window.printSchedule=function(){
     const rows=filteredSchedule(); if(!rows.length){alert('لا توجد بيانات للطباعة');return;}
-    const html=`<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جدولة الأسبوع القادم</title><style>body{font-family:Tahoma,Arial;padding:20px;color:#111}h1{margin:0 0 8px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#1e3a8a;color:#fff}td,th{border:1px solid #cbd5e1;padding:7px;text-align:right}tr:nth-child(even){background:#f8fafc}</style></head><body><h1>جدولة التدريب للأسبوع القادم</h1><p>من ${esc2(document.getElementById('scheduleFrom').value)} إلى ${esc2(document.getElementById('scheduleTo').value)}</p><table><thead><tr><th>#</th><th>الاسم</th><th>ID</th><th>الوظيفة</th><th>الموقع</th><th>الدورة</th><th>التاريخ</th><th>الوقت</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc2(x.name)}</td><td>${esc2(x.employeeId)}</td><td>${esc2(x.job)}</td><td>${esc2(x.location)}</td><td>${esc2(x.course)}</td><td>${esc2(x.date)}</td><td>${esc2(x.time||'')}</td><td>${esc2(x.status)}</td><td>${esc2(x.notes||'')}</td></tr>`).join('')}</tbody></table><script>window.onload=()=>setTimeout(()=>print(),250)<\/script>
-<script>
-// V12 final safety patch: normalize old/corrupted schedule storage before any DB save
-(function(){
-  const K='training_next_week_schedule_v1';
-  function norm(v){
-    if(Array.isArray(v)) return v;
-    if(typeof v==='string'){ try{return norm(JSON.parse(v||'[]'))}catch(e){return []} }
-    if(v && typeof v==='object') return Array.isArray(v.schedule)?v.schedule:Array.isArray(v.rows)?v.rows:Array.isArray(v.data)?v.data:Array.isArray(v.items)?v.items:[];
-    return [];
-  }
-  try{ localStorage.setItem(K, JSON.stringify(norm(localStorage.getItem(K)))); }catch(e){}
-})();
-</script>
-</body></html>`;
+    const html=`<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جدولة الأسبوع القادم</title><style>body{font-family:Tahoma,Arial;padding:20px;color:#111}h1{margin:0 0 8px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#1e3a8a;color:#fff}td,th{border:1px solid #cbd5e1;padding:7px;text-align:right}tr:nth-child(even){background:#f8fafc}</style></head><body><h1>جدولة التدريب للأسبوع القادم</h1><p>من ${esc2(document.getElementById('scheduleFrom').value)} إلى ${esc2(document.getElementById('scheduleTo').value)}</p><table><thead><tr><th>#</th><th>الاسم</th><th>ID</th><th>الوظيفة</th><th>الموقع</th><th>الدورة</th><th>التاريخ</th><th>الوقت</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc2(x.name)}</td><td>${esc2(x.employeeId)}</td><td>${esc2(x.job)}</td><td>${esc2(x.location)}</td><td>${esc2(x.course)}</td><td>${esc2(x.date)}</td><td>${esc2(x.time||'')}</td><td>${esc2(x.status)}</td><td>${esc2(x.notes||'')}</td></tr>`).join('')}</tbody></table><script>window.onload=()=>setTimeout(()=>print(),250)<\/script></body></html>`;
     const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close();
   }
   const oldShow=window.show;
@@ -628,7 +572,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     sb=null; updateCloudStatus('off','غير متصل - مكتبة Supabase لم تحمل'); return false;
   }
   function collectState(){
-    return {version:'V12_FINAL_DB_SAVE_FIXED',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
+    return {version:'V11_SCHEDULE_DB_FIXED',savedAt:new Date().toISOString(),db:getDb(),schedule:getSchedule(),theme:localStorage.getItem('training_theme_v2')||'dark'};
   }
   function applyState(state){
     if(!state) return;
@@ -678,19 +622,17 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     return rows;
   }
   function schedulePayload(){
-    let raw=[];
-    try{ raw = (typeof loadSchedule==='function') ? loadSchedule() : getSchedule(); }catch(e){ raw=[]; }
-    const list = normalizeScheduleForDb(raw);
-    return (Array.isArray(list)?list:[]).map(x=>({
-      employee_id:String(x.employeeId||x.employee_id||''),
-      employee_name:String(x.name||x.employeeName||x.employee_name||''),
+    const list = normalizeScheduleForDb(getSchedule());
+    return list.map(x=>({
+      employee_id:String(x.employeeId||''),
+      employee_name:String(x.employeeName||x.employee_name||''),
       course_name:String(x.course||x.courseName||x.course_name||''),
       schedule_date:String(x.date||x.schedule_date||''),
       schedule_time:String(x.time||x.schedule_time||''),
       status:String(x.status||''),
       notes:String(x.notes||''),
       data:x||{},
-      created_at:x.createdAt||x.created_at||new Date().toISOString()
+      created_at:x.createdAt||new Date().toISOString()
     }));
   }
   function logPayload(){
@@ -782,7 +724,7 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
     const c=getConfig();
     document.getElementById('modalTitle').textContent='إعدادات قاعدة البيانات Supabase';
     document.getElementById('modalBody').innerHTML=`
-      <div class="smallNote">الربط ثابت داخل الكود. نسخة V12: إصلاح نهائي getSchedule وتحفظ الجدولة والموظفين في DB.</div>
+      <div class="smallNote">الربط ثابت داخل الكود. نسخة V11 تصلح خطأ getSchedule().map وتحفظ الجدولة والموظفين في DB.</div>
       <div class="cloudPanel">
         <div class="field full"><label>Supabase Project URL</label><input id="sbUrl" dir="ltr" value="${esc(c.url||'')}" readonly></div>
         <div class="field full"><label>Supabase publishable key</label><input id="sbAnon" dir="ltr" value="${esc(c.anonKey||'')}" readonly></div>
@@ -821,18 +763,4 @@ function resetLocal(){localStorage.removeItem('trainingSystemFirstSheet');locati
 })();
 
 init();
-try{window.trainingDb=db;}catch(e){}</script>
-<script>
-// V12 final safety patch: normalize old/corrupted schedule storage before any DB save
-(function(){
-  const K='training_next_week_schedule_v1';
-  function norm(v){
-    if(Array.isArray(v)) return v;
-    if(typeof v==='string'){ try{return norm(JSON.parse(v||'[]'))}catch(e){return []} }
-    if(v && typeof v==='object') return Array.isArray(v.schedule)?v.schedule:Array.isArray(v.rows)?v.rows:Array.isArray(v.data)?v.data:Array.isArray(v.items)?v.items:[];
-    return [];
-  }
-  try{ localStorage.setItem(K, JSON.stringify(norm(localStorage.getItem(K)))); }catch(e){}
-})();
-</script>
-</body></html>
+try{window.trainingDb=db;}catch(e){}</script></body></html>
